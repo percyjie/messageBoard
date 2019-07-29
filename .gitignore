@@ -1,0 +1,28 @@
+# svn
+.svn
+
+# builds
+target
+
+node_modules
+
+# logs
+*.log
+*.log.*
+*.ipr
+*.iws
+
+# idea files
+.idea
+*.iml
+*.ipr
+*.iws
+
+# eclipse files
+.settings
+.project
+.classpath
+
+# OSX
+.DS_Store
+.properties

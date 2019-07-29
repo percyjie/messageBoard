@@ -11,10 +11,10 @@
     " default-lazy-init="false">
 
     <!-- 扫描要注入的包 -->
-    <context:component-scan base-package="com.licyun.model"/>
-    <context:component-scan base-package="com.licyun.service"/>
-    <context:component-scan base-package="com.licyun.dao"/>
-    <context:component-scan base-package="com.licyun.util"/>
+    <context:component-scan base-package="com.percy.model"/>
+    <context:component-scan base-package="com.percy.service"/>
+    <context:component-scan base-package="com.percy.dao"/>
+    <context:component-scan base-package="com.percy.util"/>
 
     <!-- 配置conponent-scan后可取消-->
     <context:annotation-config/>
@@ -39,7 +39,7 @@
     <bean id="sessionFactory"
           class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">
         <property name="dataSource" ref="dataSource" />
-        <property name="packagesToScan" value="com.licyun.model" />
+        <property name="packagesToScan" value="com.percy.model" />
         <property name="hibernateProperties">
             <props>
                 <prop key="hibernate.hbm2ddl.auto">${hibernate.hbm2ddl.auto}</prop>
