@@ -56,7 +56,7 @@ public class MessageDaoImp extends BaseDaoImp<Message> implements MessageDao {
     @SuppressWarnings("unchecked")
     public List<MessageJsonBean> findMessageByPage(final int pageNo,final int pageSize ){
 
-        final String hql = "select new com.licyun.vo.MessageJsonBean(" +
+        final String hql = "select new com.percy.vo.MessageJsonBean(" +
                 "u.name, m.ip, m.date, m.message, u.imgUrl, m.address) " +
                 "from User u, Message m where m.userid = u.id Order by m.id desc";
 
