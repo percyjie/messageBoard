@@ -1,8 +1,7 @@
 ### SSH(Spring SpringMVC Hibernate)框架发的在线留言管理系统
 
-### 演示站
-- [用户登录](https://gbook.licyun.com/user/login) 用户帐号：licyun@qq.com  密码：123456
-- [管理员登录](https://gbook.licyun.com/admin/login) 管理员帐号： licyun@outlook.com 密码：12345678
+### 账号
+ 用户帐号：percyjie@gmail.com  密码：123456
 
 ### 功能介绍：
 - 系统分为2个角色，用户和管理员。
