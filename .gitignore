@@ -1,28 +1,16 @@
-# svn
-.svn
-
-# builds
-target
-
-node_modules
-
-# logs
-*.log
-*.log.*
-*.ipr
-*.iws
-
-# idea files
-.idea
+#过滤文件夹target,.idea
+/target
+/.idea
+/out
 *.iml
-*.ipr
-*.iws
 
-# eclipse files
-.settings
-.project
-.classpath
+#编译文件
+*.class
 
-# OSX
-.DS_Store
-.properties
+#包文件
+*.jar
+*.war
+*.zip
+*.rar
+*.tar.gz
+
