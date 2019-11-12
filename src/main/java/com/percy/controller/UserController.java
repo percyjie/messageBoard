@@ -103,7 +103,7 @@ public class UserController {
         message.setUserid(sessionUser.getId());
         message.setDate(messageService.getDate());
         message.setIp(request.getRemoteAddr());
-        message.setAddress(IpUtil.getIpAddress(message.getIp()) + " 游客");
+        message.setAddress(IpUtil.getIpAddress(request) + " 游客");
         messageService.saveMessage(message);
         model.addAttribute("ifLogin", true);
         return "index";
