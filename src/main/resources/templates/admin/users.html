@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('用户管理')}"></head>
+<body>
+<div th:replace="~{fragments/navbar :: adminNav('users')}"></div>
+
+<main class="container page">
+    <div class="page-head">
+        <div>
+            <h1>用户管理</h1>
+            <p>查看全部账号、编辑资料，或删除用户及其留言。</p>
+        </div>
+        <a class="btn btn-brand" th:href="@{/admin/users/new}">新增管理员</a>
+    </div>
+
+    <div th:replace="~{fragments/alerts :: alerts}"></div>
+
+    <div class="admin-stats">
+        <div class="stat-card card">
+            <div class="label">用户总数</div>
+            <div class="value" th:text="${userCount}">0</div>
+        </div>
+        <div class="stat-card card">
+            <div class="label">留言总数</div>
+            <div class="value" th:text="${messageCount}">0</div>
+        </div>
+        <div class="stat-card card">
+            <div class="label">当前页</div>
+            <div class="value" th:text="${page.current}">1</div>
+        </div>
+    </div>
+
+    <div class="empty-state" th:if="${#lists.isEmpty(users)}">
+        <div class="empty-icon">
+            <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor"
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+            </svg>
+        </div>
+        <h3>暂无用户</h3>
+        <p>可以点击右上角新增管理员。</p>
+    </div>
+
+    <div class="table-card card" th:if="${!#lists.isEmpty(users)}">
+        <div class="table-responsive">
+            <table class="table admin-table align-middle">
+                <thead>
+                <tr>
+                    <th>用户</th>
+                    <th>ID</th>
+                    <th>角色</th>
+                    <th>注册时间</th>
+                    <th class="text-end">操作</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="u : ${users}">
+                    <td data-label="用户">
+                        <div class="table-user">
+                            <span th:replace="~{fragments/avatar :: avatar(u.name, u.avatar, 'md')}"></span>
+                            <div class="table-user-text">
+                                <div class="name" th:text="${u.name}">昵称</div>
+                                <div class="email" th:text="${u.email}">邮箱</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td data-label="ID" th:text="${u.id}">1</td>
+                    <td data-label="角色">
+                        <span class="badge-role" th:if="${u.admin}">管理员</span>
+                        <span class="badge-role user" th:unless="${u.admin}">普通用户</span>
+                    </td>
+                    <td data-label="注册时间" th:text="${u.createdAtText}">2026-01-01</td>
+                    <td data-label="操作">
+                        <div class="table-actions justify-content-end">
+                            <a class="link-action" th:href="@{/admin/users/{id}/messages(id=${u.id})}">留言</a>
+                            <a class="link-action" th:href="@{/admin/users/{id}/edit(id=${u.id})}">编辑</a>
+                            <form th:if="${currentAdmin == null or currentAdmin.id != u.id}"
+                                  th:action="@{/admin/users/{id}/delete(id=${u.id})}" method="post"
+                                  data-confirm="删除用户会同时删除该用户的全部留言，确定继续吗？">
+                                <button class="btn btn-ghost-danger btn-sm" type="submit">删除</button>
+                            </form>
+                            <span class="badge-soft" th:if="${currentAdmin != null and currentAdmin.id == u.id}">当前账号</span>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div th:replace="~{fragments/pagination :: pagination(${page}, '/admin/users')}"></div>
+</main>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

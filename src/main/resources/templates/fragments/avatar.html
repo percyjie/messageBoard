@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<span th:fragment="avatar(name, avatar, size)" class="avatar" th:classappend="|avatar-${size}|">
+    <img th:if="${avatar != null and !#strings.isEmpty(avatar)}"
+         th:src="@{|/upload/${avatar}|}"
+         th:alt="${name}"
+         loading="lazy">
+    <span th:if="${avatar == null or #strings.isEmpty(avatar)}"
+          th:text="${(name == null or #strings.isEmpty(name)) ? '?' : #strings.substring(name, 0, 1)}"></span>
+</span>
+</body>
+</html>

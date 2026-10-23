@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('更换头像')}"></head>
+<body>
+<div th:replace="~{fragments/navbar :: siteNav('profile')}"></div>
+
+<main class="container page">
+    <div class="page-head">
+        <div>
+            <h1>更换头像</h1>
+            <p>支持 JPG、PNG、GIF、WebP，文件不超过 2MB。</p>
+        </div>
+        <a class="btn btn-light" th:href="@{/user/profile}">返回个人中心</a>
+    </div>
+
+    <div th:replace="~{fragments/alerts :: alerts}"></div>
+
+    <section class="avatar-editor card">
+        <div class="avatar-current">
+            <span th:replace="~{fragments/avatar :: avatar(user.name, user.avatar, 'xl')}"></span>
+            <div class="muted" style="margin-top:12px;">当前头像</div>
+        </div>
+
+        <form class="avatar-form" th:action="@{/user/avatar}" method="post" enctype="multipart/form-data">
+            <div class="form-field">
+                <label class="form-label" for="avatarFile">选择图片</label>
+                <input type="file" id="avatarFile" name="file" class="form-control"
+                       accept="image/jpeg,image/png,image/gif,image/webp" required>
+                <p class="form-hint">上传成功后会立即替换当前头像。</p>
+            </div>
+            <img id="avatarPreview" class="avatar-preview" alt="头像预览" hidden>
+            <div class="actions">
+                <button class="btn btn-brand" type="submit">上传头像</button>
+                <a class="btn btn-light" th:href="@{/user/profile}">取消</a>
+            </div>
+        </form>
+    </section>
+</main>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>
