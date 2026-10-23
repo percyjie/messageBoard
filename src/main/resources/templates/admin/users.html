@@ -60,7 +60,7 @@
                 <tr th:each="u : ${users}">
                     <td data-label="用户">
                         <div class="table-user">
-                            <span th:replace="~{fragments/avatar :: avatar(u.name, u.avatar, 'md')}"></span>
+                            <span th:replace="~{fragments/avatar :: avatar(${u.name}, ${u.avatar}, 'md')}"></span>
                             <div class="table-user-text">
                                 <div class="name" th:text="${u.name}">昵称</div>
                                 <div class="email" th:text="${u.email}">邮箱</div>

@@ -11,15 +11,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.mock.web.MockHttpSession;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
+import java.util.Base64;
 import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrlPattern;
@@ -52,14 +55,47 @@ class WebFlowIntegrationTest {
     }
 
     @Test
-    void protectedPagesRedirectAnonymousUsersToLogin() throws Exception {
+    void protectedUserPagesRedirectAnonymousUsersToLogin() throws Exception {
         mockMvc.perform(get("/user/profile"))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrlPattern("/user/login*"));
+    }
 
-        mockMvc.perform(post("/messages").param("content", "匿名留言"))
+    @Test
+    void anonymousCanPostMessageAndIsShownAsGuest() throws Exception {
+        mockMvc.perform(post("/messages").param("content", "匿名留言测试"))
                 .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrlPattern("/user/login*"));
+                .andExpect(redirectedUrl("/"));
+
+        Message message = messageMapper.selectOne(new LambdaQueryWrapper<Message>()
+                .eq(Message::getContent, "匿名留言测试")
+                .last("LIMIT 1"));
+        assertThat(message).isNotNull();
+        assertThat(message.getUserId()).isNull();
+        assertThat(message.getProvince()).isNotBlank();
+
+        String html = mockMvc.perform(get("/"))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+        assertThat(html).contains("匿名留言测试");
+        assertThat(html).contains("匿名访客");
+        assertThat(html).contains("游客");
+    }
+
+    @Test
+    void provinceIsResolvedFromForwardedIp() throws Exception {
+        mockMvc.perform(post("/messages")
+                        .header("X-Forwarded-For", "113.108.0.1")
+                        .param("content", "省份解析测试"))
+                .andExpect(status().is3xxRedirection());
+
+        Message message = messageMapper.selectOne(new LambdaQueryWrapper<Message>()
+                .eq(Message::getContent, "省份解析测试")
+                .last("LIMIT 1"));
+        assertThat(message).isNotNull();
+        assertThat(message.getProvince()).isEqualTo("广东省");
     }
 
     @Test
@@ -70,6 +106,10 @@ class WebFlowIntegrationTest {
         mockMvc.perform(post("/messages").session(owner).param("content", "这是一条测试留言"))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/"));
+
+        mockMvc.perform(get("/user/messages").session(owner))
+                .andExpect(status().isOk())
+                .andExpect(view().name("user/messages"));
 
         SessionUser ownerUser = (SessionUser) owner.getAttribute(SessionKeys.USER);
         List<Message> messages = messageMapper.selectList(new LambdaQueryWrapper<Message>()
@@ -107,6 +147,28 @@ class WebFlowIntegrationTest {
 
         assertThat(html).contains("&lt;script&gt;");
         assertThat(html).doesNotContain(payload);
+    }
+
+    @Test
+    void avatarUploadRendersStoredFileUrl() throws Exception {
+        MockHttpSession session = register(uniqueEmail(), "头像用户", "123456");
+        byte[] png = Base64.getDecoder().decode(
+                "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=");
+
+        mockMvc.perform(multipart("/user/avatar")
+                        .file(new MockMultipartFile("file", "avatar.png", "image/png", png))
+                        .session(session))
+                .andExpect(status().is3xxRedirection());
+
+        String html = mockMvc.perform(get("/user/profile").session(session))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        assertThat(html).containsPattern("/upload/[0-9a-f\\-]{36}\\.png");
+        assertThat(html).doesNotContain("/upload/user.avatar");
+        assertThat(html).doesNotContain("/upload/currentUser.avatar");
     }
 
     private MockHttpSession register(String email, String name, String password) throws Exception {

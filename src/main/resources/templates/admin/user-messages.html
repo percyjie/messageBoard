@@ -22,7 +22,7 @@
     <div th:replace="~{fragments/alerts :: alerts}"></div>
 
     <section class="user-summary card">
-        <span th:replace="~{fragments/avatar :: avatar(user.name, user.avatar, 'lg')}"></span>
+        <span th:replace="~{fragments/avatar :: avatar(${user.name}, ${user.avatar}, 'lg')}"></span>
         <div class="user-summary-text">
             <div class="name">
                 <span th:text="${user.name}">昵称</span>
@@ -47,14 +47,16 @@
 
     <article class="message-card card" th:each="m : ${messages}">
         <header class="message-head">
-            <span th:replace="~{fragments/avatar :: avatar(user.name, user.avatar, 'sm')}"></span>
+            <span th:replace="~{fragments/avatar :: avatar(${user.name}, ${user.avatar}, 'sm')}"></span>
             <div class="message-meta">
                 <div class="message-author" th:text="${user.name}">昵称</div>
                 <div class="message-sub">
                     <time th:datetime="${m.createdAtIso}" th:text="${m.createdAtText}"
                           th:title="${m.createdAtText}" data-relative-time></time>
                     <span class="dot">·</span>
-                    <span class="ip-pill" th:text="'IP ' + ${m.ip}">IP</span>
+                    <span class="province-pill"
+                          th:text="'来自 ' + ${m.displayProvince}"
+                          th:title="${currentAdmin != null ? 'IP ' + m.ip : null}">来自 未知</span>
                 </div>
             </div>
         </header>

@@ -32,7 +32,7 @@ public class MessageServiceImpl implements MessageService {
 
     @Override
     @Transactional
-    public void create(Long userId, String content, String ip) {
+    public void create(Long userId, String content, String ip, String province) {
         String text = content == null ? "" : content.trim();
         if (text.isEmpty()) {
             throw new IllegalArgumentException("留言内容不能为空");
@@ -41,6 +41,7 @@ public class MessageServiceImpl implements MessageService {
         message.setUserId(userId);
         message.setContent(text);
         message.setIp(ip);
+        message.setProvince(province);
         message.setCreatedAt(LocalDateTime.now());
         messageMapper.insert(message);
     }
@@ -62,6 +63,13 @@ public class MessageServiceImpl implements MessageService {
         if (!Objects.equals(message.getUserId(), expectedUserId)) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "留言不存在");
         }
+        messageMapper.deleteById(messageId);
+    }
+
+    @Override
+    @Transactional
+    public void deleteAnyAsAdmin(Long messageId) {
+        requireMessage(messageId);
         messageMapper.deleteById(messageId);
     }
 

@@ -1,5 +1,8 @@
 package com.percy.messageboard;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.percy.messageboard.entity.Message;
+import com.percy.messageboard.mapper.MessageMapper;
 import com.percy.messageboard.util.SessionKeys;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +32,9 @@ class AdminIntegrationTest {
     @Autowired
     private MockMvc mockMvc;
 
+    @Autowired
+    private MessageMapper messageMapper;
+
     @Test
     void adminCanLoginAndOpenUserManagement() throws Exception {
         MvcResult result = mockMvc.perform(post("/admin/login")
@@ -45,6 +51,10 @@ class AdminIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(view().name("admin/users"))
                 .andExpect(model().attributeExists("users", "page"));
+
+        mockMvc.perform(get("/admin/users/2/messages").session(adminSession))
+                .andExpect(status().isOk())
+                .andExpect(view().name("admin/user-messages"));
     }
 
     @Test
@@ -69,5 +79,31 @@ class AdminIntegrationTest {
         mockMvc.perform(get("/admin/users"))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrlPattern("/admin/login*"));
+    }
+
+    @Test
+    void adminCanDeleteAnonymousMessageFromHome() throws Exception {
+        mockMvc.perform(post("/messages").param("content", "待删除的匿名留言"))
+                .andExpect(status().is3xxRedirection());
+
+        Message message = messageMapper.selectOne(new LambdaQueryWrapper<Message>()
+                .eq(Message::getContent, "待删除的匿名留言")
+                .last("LIMIT 1"));
+        assertThat(message).isNotNull();
+        assertThat(message.getUserId()).isNull();
+
+        MvcResult login = mockMvc.perform(post("/admin/login")
+                        .param("email", "percyjie@gmail.com")
+                        .param("password", "123456"))
+                .andExpect(status().is3xxRedirection())
+                .andReturn();
+        MockHttpSession adminSession = (MockHttpSession) login.getRequest().getSession(false);
+
+        mockMvc.perform(post("/admin/messages/{id}/delete", message.getId())
+                        .session(adminSession)
+                        .param("page", "1"))
+                .andExpect(status().is3xxRedirection());
+
+        assertThat(messageMapper.selectById(message.getId())).isNull();
     }
 }

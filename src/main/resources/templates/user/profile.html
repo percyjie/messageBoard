@@ -17,7 +17,7 @@
 
     <div class="profile-grid">
         <section class="profile-card card">
-            <span th:replace="~{fragments/avatar :: avatar(user.name, user.avatar, 'xl')}"></span>
+            <span th:replace="~{fragments/avatar :: avatar(${user.name}, ${user.avatar}, 'xl')}"></span>
             <div>
                 <div class="profile-name" th:text="${user.name}">昵称</div>
                 <span class="badge-role" th:if="${user.admin}">管理员</span>

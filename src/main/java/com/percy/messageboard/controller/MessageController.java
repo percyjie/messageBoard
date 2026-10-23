@@ -2,6 +2,7 @@ package com.percy.messageboard.controller;
 
 import com.percy.messageboard.dto.MessageForm;
 import com.percy.messageboard.dto.SessionUser;
+import com.percy.messageboard.service.GeoIpService;
 import com.percy.messageboard.service.MessageService;
 import com.percy.messageboard.util.IpUtils;
 import com.percy.messageboard.util.SessionKeys;
@@ -22,6 +23,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class MessageController {
 
     private final MessageService messageService;
+    private final GeoIpService geoIpService;
 
     @PostMapping("/messages")
     public String create(@Valid @ModelAttribute("messageForm") MessageForm form,
@@ -38,7 +40,10 @@ public class MessageController {
             return "redirect:/";
         }
         SessionUser current = (SessionUser) session.getAttribute(SessionKeys.USER);
-        messageService.create(current.getId(), form.getContent(), IpUtils.clientIp(request));
+        Long userId = current == null ? null : current.getId();
+        String ip = IpUtils.clientIp(request);
+        String province = geoIpService.resolveProvince(ip);
+        messageService.create(userId, form.getContent(), ip, province);
         redirectAttributes.addFlashAttribute("success", "留言发布成功");
         return "redirect:/";
     }
