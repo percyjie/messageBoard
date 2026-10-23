@@ -7,11 +7,13 @@ public interface MessageService {
 
     Page<MessageView> page(long current, long size, Long userId);
 
-    void create(Long userId, String content, String ip);
+    void create(Long userId, String content, String ip, String province);
 
     void deleteOwn(Long messageId, Long userId);
 
     void deleteAsAdmin(Long messageId, Long expectedUserId);
+
+    void deleteAnyAsAdmin(Long messageId);
 
     long count();
 

@@ -46,4 +46,13 @@ public class AdminMessageController {
         redirectAttributes.addFlashAttribute("success", "留言已删除");
         return "redirect:/admin/users/" + uid + "/messages?page=" + Math.max(page, 1);
     }
+
+    @PostMapping("/admin/messages/{id}/delete")
+    public String deleteFromHome(@PathVariable Long id,
+                                 @RequestParam(defaultValue = "1") long page,
+                                 RedirectAttributes redirectAttributes) {
+        messageService.deleteAnyAsAdmin(id);
+        redirectAttributes.addFlashAttribute("success", "留言已删除");
+        return "redirect:/?page=" + Math.max(page, 1);
+    }
 }

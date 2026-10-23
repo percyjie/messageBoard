@@ -55,14 +55,47 @@ class WebFlowIntegrationTest {
     }
 
     @Test
-    void protectedPagesRedirectAnonymousUsersToLogin() throws Exception {
+    void protectedUserPagesRedirectAnonymousUsersToLogin() throws Exception {
         mockMvc.perform(get("/user/profile"))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrlPattern("/user/login*"));
+    }
 
-        mockMvc.perform(post("/messages").param("content", "匿名留言"))
+    @Test
+    void anonymousCanPostMessageAndIsShownAsGuest() throws Exception {
+        mockMvc.perform(post("/messages").param("content", "匿名留言测试"))
                 .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrlPattern("/user/login*"));
+                .andExpect(redirectedUrl("/"));
+
+        Message message = messageMapper.selectOne(new LambdaQueryWrapper<Message>()
+                .eq(Message::getContent, "匿名留言测试")
+                .last("LIMIT 1"));
+        assertThat(message).isNotNull();
+        assertThat(message.getUserId()).isNull();
+        assertThat(message.getProvince()).isNotBlank();
+
+        String html = mockMvc.perform(get("/"))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+        assertThat(html).contains("匿名留言测试");
+        assertThat(html).contains("匿名访客");
+        assertThat(html).contains("游客");
+    }
+
+    @Test
+    void provinceIsResolvedFromForwardedIp() throws Exception {
+        mockMvc.perform(post("/messages")
+                        .header("X-Forwarded-For", "113.108.0.1")
+                        .param("content", "省份解析测试"))
+                .andExpect(status().is3xxRedirection());
+
+        Message message = messageMapper.selectOne(new LambdaQueryWrapper<Message>()
+                .eq(Message::getContent, "省份解析测试")
+                .last("LIMIT 1"));
+        assertThat(message).isNotNull();
+        assertThat(message.getProvince()).isEqualTo("广东省");
     }
 
     @Test
@@ -73,6 +106,10 @@ class WebFlowIntegrationTest {
         mockMvc.perform(post("/messages").session(owner).param("content", "这是一条测试留言"))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/"));
+
+        mockMvc.perform(get("/user/messages").session(owner))
+                .andExpect(status().isOk())
+                .andExpect(view().name("user/messages"));
 
         SessionUser ownerUser = (SessionUser) owner.getAttribute(SessionKeys.USER);
         List<Message> messages = messageMapper.selectList(new LambdaQueryWrapper<Message>()

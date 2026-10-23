@@ -11,14 +11,16 @@
 | 视图 | Thymeleaf、Bootstrap 5.3（本地静态资源） |
 | 鉴权 | HttpSession + HandlerInterceptor |
 | 密码 | BCrypt（`spring-security-crypto`） |
+| IP 归属地 | ip2region 3.x（离线 xdb，无外部 API） |
 | 构建 | Maven（jar 打包） |
 
 ## 功能
 
 **公开访问**
 - 留言墙：按时间倒序展示留言，每页 5 条
-- 展示头像、昵称、时间、来源 IP、留言内容
-- 未登录访客可以浏览，但不能发布
+- 展示头像、昵称、时间、来源省份、留言内容
+- 未登录访客可以浏览，也可以匿名发布留言（显示为“匿名访客 / 游客”）
+- 发留言时根据客户端 IP 解析省份；精确 IP 仅管理员悬停时可见
 
 **普通用户**
 - 注册（注册后自动登录）、登录、退出
@@ -32,6 +34,7 @@
 - 新增管理员
 - 分页查看全部用户、编辑用户资料、删除用户（级联删除其留言）
 - 查看并删除任意用户的留言
+- 在留言墙直接删除任意留言，包括匿名留言
 - 不能删除当前登录的管理员账号
 
 ## 演示账号
@@ -68,6 +71,12 @@ H2 控制台：<http://localhost:8080/h2-console>
 
 ```bash
 mysql -u root -p < src/main/resources/db/schema-mysql.sql
+```
+
+如果数据库是按旧版脚本创建的，先执行增量迁移（允许匿名留言的 `user_id = NULL`，新增 `province` 列）：
+
+```bash
+mysql -u root -p < src/main/resources/db/migration-v2-anonymous-province.sql
 ```
 
 2. 设置数据库连接（按需修改）：
@@ -127,7 +136,8 @@ src/main/java/com/percy/messageboard/
 └── util/            # IP、时间、重定向、Session key
 
 src/main/resources/
-├── db/              # H2 / MySQL 建表脚本
+├── db/              # H2 / MySQL 建表与迁移脚本
+├── ip2region/       # 离线 IP 归属地 xdb
 ├── mapper/          # 留言联表分页 SQL
 ├── templates/       # Thymeleaf 页面与公共片段
 └── static/          # app.css、app.js、Bootstrap 5、favicon
@@ -140,9 +150,20 @@ src/main/resources/
 - 使用新表 `t_user` / `t_message`，旧 `gbook.sql` 不再使用
 - 密码由明文改为 BCrypt，个人中心不再展示密码
 - 留言列表改为服务端分页，旧 AJAX 接口 `messageJson-{page}` 已移除
-- 旧淘宝 IP 归属地接口早已失效，改为保存并展示客户端 IP，不再发起外部请求
+- 旧淘宝 IP 归属地接口早已失效，改为离线 ip2region 解析省份，不再发起外部请求
+- 支持匿名留言，`t_message.user_id` 可以为 `NULL`
 - 昵称长度从“至少 6 位”放宽到 2–20 位，兼容 2–4 字中文名
 - 删除用户会级联删除其留言，不再因外键约束报错
+
+## IP 归属地数据
+
+`src/main/resources/ip2region/ip2region_v4.xdb` 来自
+[ip2region](https://github.com/lionsoul2014/ip2region)（Apache-2.0），完全离线查询，不调用外部 API。
+
+- 支持 IPv4；公网 IPv6 显示“未知”
+- 本机回环地址显示“本地”，内网地址显示“内网”
+- 数据库文件约 11MB，会一起打入 jar
+- 每次发留言时解析一次并保存到 `t_message.province`，页面直接读取，不重复查询
 
 ## 安全说明
 
@@ -151,5 +172,10 @@ src/main/resources/
 - 上传头像校验文件类型、扩展名与大小，使用 UUID 文件名，防止路径穿越
 - 登录成功后轮换 Session ID；退出时销毁会话
 - 管理员登录要求 `role = 2`，管理员不能删除自己
+- 匿名留言没有归属用户，只能由管理员删除；精确 IP 只对管理员悬停展示
 
-已知限制：项目未引入 Spring Security，因此没有 CSRF Token；当前通过 POST-only 变更操作和 `SameSite=Lax` 会话 Cookie 降低风险。如需更严格的安全控制，可在后续引入 Spring Security。
+已知限制：
+
+- 项目未引入 Spring Security，因此没有 CSRF Token；当前通过 POST-only 变更操作和 `SameSite=Lax` 会话 Cookie 降低风险。
+- 匿名留言当前没有验证码或频率限制，公网部署时建议在反向代理层增加限流。
+- IP 归属地解析信任 `X-Forwarded-For`，部署在可信反向代理后使用；直接暴露公网时可改为只取 `remoteAddr`。

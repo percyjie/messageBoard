@@ -35,7 +35,9 @@
                     <time th:datetime="${m.createdAtIso}" th:text="${m.createdAtText}"
                           th:title="${m.createdAtText}" data-relative-time></time>
                     <span class="dot">·</span>
-                    <span class="ip-pill" th:text="'IP ' + ${m.ip}">IP</span>
+                    <span class="province-pill"
+                          th:text="'来自 ' + ${m.displayProvince}"
+                          th:title="${currentAdmin != null ? 'IP ' + m.ip : null}">来自 未知</span>
                 </div>
             </div>
         </header>

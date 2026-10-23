@@ -458,6 +458,7 @@ main.page {
 .composer-head {
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
     gap: 12px;
     margin-bottom: 14px;
     color: var(--muted);
@@ -466,6 +467,10 @@ main.page {
 
 .composer-head strong {
     color: var(--text);
+}
+
+.composer-location {
+    margin-left: auto;
 }
 
 .composer textarea {
@@ -496,35 +501,6 @@ main.page {
     color: var(--muted);
     font-size: 12px;
     font-variant-numeric: tabular-nums;
-}
-
-.prompt {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-    gap: 24px;
-    padding: 26px;
-    background: linear-gradient(120deg, #fff, #f7f5ff);
-}
-
-.prompt h2 {
-    margin: 0 0 6px;
-    font-size: 20px;
-    font-weight: 800;
-    letter-spacing: -.02em;
-}
-
-.prompt p {
-    margin: 0;
-    color: var(--muted);
-    font-size: 14px;
-}
-
-.prompt-actions {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
 }
 
 /* Feed */
@@ -586,12 +562,15 @@ main.page {
     opacity: .45;
 }
 
-.ip-pill {
+.province-pill {
+    display: inline-flex;
+    align-items: center;
     padding: 2px 9px;
     border-radius: 999px;
-    background: #f3f4f6;
-    color: #6b7280;
+    background: #eef2ff;
+    color: #4f46e5;
     font-size: 11px;
+    font-weight: 600;
 }
 
 .message-content {
@@ -627,6 +606,12 @@ main.page {
     border-color: #e2e8f0;
     background: #f8fafc;
     color: #64748b;
+}
+
+.badge-role.guest {
+    border-color: #d1fae5;
+    background: #ecfdf5;
+    color: #047857;
 }
 
 .badge-soft {
@@ -1253,11 +1238,6 @@ main.page {
         padding: 18px;
     }
 
-    .prompt {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
     .avatar-editor {
         flex-direction: column;
         align-items: flex-start;
@@ -1363,6 +1343,10 @@ main.page {
 
     .stat-chip {
         padding: 8px 12px;
+    }
+
+    .composer-location {
+        margin-left: 0;
     }
 
     .admin-stats {

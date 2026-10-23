@@ -16,10 +16,23 @@ public class MessageView {
     private Integer role;
     private String content;
     private String ip;
+    private String province;
     private LocalDateTime createdAt;
 
     public boolean isAdmin() {
         return role != null && role == User.ROLE_ADMIN;
+    }
+
+    public boolean isAnonymous() {
+        return userId == null;
+    }
+
+    public String getAuthorName() {
+        return authorName == null || authorName.isBlank() ? "匿名访客" : authorName;
+    }
+
+    public String getDisplayProvince() {
+        return province == null || province.isBlank() ? "未知" : province;
     }
 
     public String getCreatedAtText() {
@@ -31,6 +44,6 @@ public class MessageView {
     }
 
     public String getAuthorInitial() {
-        return authorName == null || authorName.isEmpty() ? "?" : authorName.substring(0, 1);
+        return getAuthorName().substring(0, 1);
     }
 }

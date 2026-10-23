@@ -22,9 +22,10 @@ CREATE TABLE IF NOT EXISTS t_user
 CREATE TABLE IF NOT EXISTS t_message
 (
     id         BIGINT       NOT NULL AUTO_INCREMENT,
-    user_id    BIGINT       NOT NULL,
+    user_id    BIGINT       NULL COMMENT 'NULL 表示匿名留言',
     content    VARCHAR(255) NOT NULL,
     ip         VARCHAR(45)  NOT NULL,
+    province   VARCHAR(50)  NULL,
     created_at DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id),
     KEY idx_t_message_user_id (user_id),

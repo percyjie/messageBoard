@@ -16,6 +16,7 @@
 
         <div class="nav-actions">
             <a class="nav-link" th:classappend="${active == 'home'} ? 'is-active'" th:href="@{/}">留言墙</a>
+            <a class="nav-link" th:if="${currentAdmin != null}" th:href="@{/admin/users}">管理后台</a>
 
             <th:block th:if="${currentUser != null}">
                 <a class="nav-link" th:classappend="${active == 'messages'} ? 'is-active'"

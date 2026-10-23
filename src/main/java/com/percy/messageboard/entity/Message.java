@@ -22,5 +22,7 @@ public class Message {
 
     private String ip;
 
+    private String province;
+
     private LocalDateTime createdAt;
 }

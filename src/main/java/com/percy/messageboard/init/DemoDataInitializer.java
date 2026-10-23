@@ -41,13 +41,22 @@ public class DemoDataInitializer implements CommandLineRunner {
         User qu = seedUser("曲筱绡", "licyun@163.com", "12345678",
                 User.ROLE_USER, now.minusDays(10));
 
-        seedMessage(admin, "欢迎来到新版留言板。这里保留了原来的功能，也换上了更清爽的界面。", now.minusDays(9));
-        seedMessage(qiu, "这个界面比十年前清爽多了，看起来舒服很多。", now.minusDays(6));
-        seedMessage(guan, "有人一起研究 Spring Boot 吗？最近在试着把老项目翻新。", now.minusDays(4));
-        seedMessage(qu, "最近在整理旧代码。\n把 JSP 换成 Thymeleaf 之后，页面维护轻松了不少，模板也更好读。", now.minusDays(2));
-        seedMessage(qiu, "今天也要好好写代码。", now.minusHours(5));
-        seedMessage(admin, "留言会自动记录时间和来源 IP，匿名访客也可以浏览全部内容。", now.minusMinutes(40));
-        seedMessage(guan, "第一条留言来自 2016 年，新的故事从这里开始。", now.minusMinutes(3));
+        seedMessage(admin, "欢迎来到新版留言板。这里保留了原来的功能，也换上了更清爽的界面。",
+                "119.96.0.1", "湖北省", now.minusDays(9));
+        seedMessage(qiu, "这个界面比十年前清爽多了，看起来舒服很多。",
+                "113.108.0.1", "广东省", now.minusDays(6));
+        seedMessage(guan, "有人一起研究 Spring Boot 吗？最近在试着把老项目翻新。",
+                "123.125.0.1", "北京市", now.minusDays(4));
+        seedMessage(qu, "最近在整理旧代码。\n把 JSP 换成 Thymeleaf 之后，页面维护轻松了不少，模板也更好读。",
+                "115.236.0.1", "浙江省", now.minusDays(2));
+        seedMessage(qiu, "今天也要好好写代码。",
+                "113.108.0.1", "广东省", now.minusHours(5));
+        seedMessage(admin, "留言会自动记录时间和来源 IP，匿名访客也可以浏览全部内容。",
+                "119.96.0.1", "湖北省", now.minusMinutes(40));
+        seedMessage(null, "路过留个言，匿个名。",
+                "113.108.0.1", "广东省", now.minusMinutes(12));
+        seedMessage(guan, "第一条留言来自 2016 年，新的故事从这里开始。",
+                "127.0.0.1", "本地", now.minusMinutes(3));
 
         log.info("演示数据已初始化，管理员账号: percyjie@gmail.com / 123456");
     }
@@ -63,11 +72,13 @@ public class DemoDataInitializer implements CommandLineRunner {
         return user;
     }
 
-    private void seedMessage(User author, String content, LocalDateTime createdAt) {
+    private void seedMessage(User author, String content, String ip, String province,
+                             LocalDateTime createdAt) {
         Message message = new Message();
-        message.setUserId(author.getId());
+        message.setUserId(author == null ? null : author.getId());
         message.setContent(content);
-        message.setIp("127.0.0.1");
+        message.setIp(ip);
+        message.setProvince(province);
         message.setCreatedAt(createdAt);
         messageMapper.insert(message);
     }

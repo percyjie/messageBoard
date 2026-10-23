@@ -13,9 +13,10 @@ CREATE TABLE IF NOT EXISTS t_user
 CREATE TABLE IF NOT EXISTS t_message
 (
     id         BIGINT AUTO_INCREMENT PRIMARY KEY,
-    user_id    BIGINT       NOT NULL,
+    user_id    BIGINT       NULL,
     content    VARCHAR(255) NOT NULL,
     ip         VARCHAR(45)  NOT NULL,
+    province   VARCHAR(50)  NULL,
     created_at TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_t_message_user FOREIGN KEY (user_id) REFERENCES t_user (id) ON DELETE CASCADE
 );

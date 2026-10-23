@@ -9,7 +9,7 @@
         <div class="hero-copy">
             <p class="eyebrow">MESSAGE BOARD</p>
             <h1>留下你的想法，<br><span class="gradient-text">让交流发生</span></h1>
-            <p class="lead">一个轻量、干净的留言空间。登录后即可发布留言，所有访客都能浏览大家分享的内容。</p>
+            <p class="lead">一个轻量、干净的留言空间。无需登录也能留言；登录后还能管理个人资料和查看自己的留言。</p>
             <div class="hero-stats">
                 <span class="stat-chip"><strong th:text="${messageCount}">0</strong> 条留言</span>
                 <span class="stat-chip"><strong th:text="${userCount}">0</strong> 位成员</span>
@@ -25,12 +25,23 @@
 
     <div th:replace="~{fragments/alerts :: alerts}"></div>
 
-    <section class="composer card" th:if="${currentUser != null}">
+    <section class="composer card">
         <div class="composer-head">
-            <span th:replace="~{fragments/avatar :: avatar(${currentUser.name}, ${currentUser.avatar}, 'md')}"></span>
+            <th:block th:if="${currentUser != null}">
+                <span th:replace="~{fragments/avatar :: avatar(${currentUser.name}, ${currentUser.avatar}, 'md')}"></span>
+            </th:block>
+            <span th:unless="${currentUser != null}" class="avatar avatar-md"><span>匿</span></span>
             <div>
-                以 <strong th:text="${currentUser.name}">昵称</strong> 的身份留言
+                <th:block th:if="${currentUser != null}">
+                    以 <strong th:text="${currentUser.name}">昵称</strong> 的身份留言
+                </th:block>
+                <th:block th:unless="${currentUser != null}">
+                    以游客身份留言 · <a th:href="@{/user/login}">登录</a> 后显示昵称
+                </th:block>
             </div>
+            <span class="province-pill composer-location"
+                  th:text="'当前归属地：' + ${currentProvince}"
+                  th:title="'IP ' + ${currentIp}">当前归属地：未知</span>
         </div>
         <form th:action="@{/messages}" method="post">
             <textarea id="messageContent" name="content" class="form-control" rows="4" maxlength="255"
@@ -41,17 +52,6 @@
                 <button class="btn btn-brand" type="submit">发布留言</button>
             </div>
         </form>
-    </section>
-
-    <section class="composer card prompt" th:if="${currentUser == null}">
-        <div>
-            <h2>登录后即可留言</h2>
-            <p>注册一个账号，加入这场轻松的交流。</p>
-        </div>
-        <div class="prompt-actions">
-            <a class="btn btn-brand" th:href="@{/user/login}">登录</a>
-            <a class="btn btn-light" th:href="@{/user/register}">注册</a>
-        </div>
     </section>
 
     <section class="feed">
@@ -77,17 +77,27 @@
                 <div class="message-meta">
                     <div class="message-author">
                         <span th:text="${m.authorName}">昵称</span>
+                        <span class="badge-role guest" th:if="${m.anonymous}">游客</span>
                         <span class="badge-role" th:if="${m.admin}">管理员</span>
                     </div>
                     <div class="message-sub">
                         <time th:datetime="${m.createdAtIso}" th:text="${m.createdAtText}"
                               th:title="${m.createdAtText}" data-relative-time></time>
                         <span class="dot">·</span>
-                        <span class="ip-pill" th:text="'IP ' + ${m.ip}">IP</span>
+                        <span class="province-pill"
+                              th:text="'来自 ' + ${m.displayProvince}"
+                              th:title="${currentAdmin != null ? 'IP ' + m.ip : null}">来自 未知</span>
                     </div>
                 </div>
             </header>
             <p class="message-content" th:text="${m.content}">留言内容</p>
+            <div class="message-actions" th:if="${currentAdmin != null}">
+                <form th:action="@{/admin/messages/{id}/delete(id=${m.id})}" method="post"
+                      data-confirm="确定要删除这条留言吗？删除后无法恢复。">
+                    <input type="hidden" name="page" th:value="${page.current}">
+                    <button class="btn btn-ghost-danger btn-sm" type="submit">删除留言</button>
+                </form>
+            </div>
         </article>
     </section>
 
