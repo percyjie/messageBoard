@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('页面不存在')}"></head>
+<body class="error-body">
+<main class="error-page">
+    <div>
+        <div class="error-code">404</div>
+        <h1>页面不存在</h1>
+        <p>你访问的页面可能已被删除，或者地址有误。</p>
+        <a class="btn btn-brand" th:href="@{/}">返回留言墙</a>
+    </div>
+</main>
+<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

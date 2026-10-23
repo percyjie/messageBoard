@@ -1,29 +1,155 @@
-### SSH(Spring SpringMVC Hibernate)框架发的在线留言管理系统
+# 留言板 · Spring Boot 3 + MyBatis-Plus
 
-### 账号
- 用户帐号：percyjie@gmail.com  密码：123456
+原项目是 2016 年的 SSH（Spring MVC + Hibernate + JSP）留言板。本版本保留原有功能，使用 Spring Boot 3、MyBatis-Plus 和 Thymeleaf 重写，并重做了响应式 UI。
 
-### 功能介绍：
-- 系统分为2个角色，用户和管理员。
-- 用户 ：未注册用户可以观看所有留言，但是提交留言需要注册登录，登录后可以修改个人信息：邮箱，用户名，头像和密码。
-- 管理员：管理员和用户和用户公用一张表，管理员在表中的type字段为2，用户的type字段为1，管理员可以删除用户和留言，同时也可以编辑用户信息。
+## 技术栈
 
-### 系统结构：
-- controller:控制层 AdminController和UserController分别控制管理员和用户的请求转发。
-- dao: 封装操作数据库的方法,抽象类BaseDao封装了gethibernateTemplate常用的操作,UserDao和MessageDao分别封装了用户管理员对数据库的操作和留言类对数据库的操作。
-- interceptor: 拦截层，配置当用户和管理员未登录时不允许访问其他页面，通过session判断并跳转到登录页
-- model: 持久层，定义了User和Message两个持久化类，使用springmvc的注解和数据库对应的user和message表建立对应的映射。
-- service: 服务层，MessageService和UserService封装了用户管理员和留言的一些业务逻辑处理。
-- util: 工具层，UploadImg图片上传，Validate输入表单验证及错误返回。
-- vo: 服务层对bean的操作。避免和持久层重复。
+| 层次 | 技术 |
+|---|---|
+| 后端 | Spring Boot 3.5、Java 17 |
+| 持久层 | MyBatis-Plus 3.5、H2（开发）、MySQL 8（生产） |
+| 视图 | Thymeleaf、Bootstrap 5.3（本地静态资源） |
+| 鉴权 | HttpSession + HandlerInterceptor |
+| 密码 | BCrypt（`spring-security-crypto`） |
+| 构建 | Maven（jar 打包） |
 
-### 配置信息
-- web.xml  注册SpringMVC默认dispacher转发器及mvc-dispacher-servlet.xml，添加hibernate拦截器，设置输入编码和application.xml hibernate配置文件。
-- mvc-dispacher-servlet.xml 扫描包注册bean的自动装载，配置国际化资源，返回对应物理逻辑视图，配置上传文件大小和格式，配置静态文件访问，配置intercepter拦截器实现用户和管理员登录拦截。
-- application.xml 扫描除Controller外的bean包自动装载,配置C3P0数据源连接数据库信息，定义sessionFactory工厂并为其注入datasouce数据源，定义gethibernate数据库操作类 和 transaction事务管理 并为其注入SessionFactory， 声明事务采用注解方式。
+## 功能
 
-## 首页分页说明
-- 首页采用ajax获取json分页数据，让更多业务逻辑在客户端处理，减少服务器压力。
-- messageDao层使用抽象类BaseDao的的分页查询，并配置jackson包返回json对象的分页数据。
-- 通过js获取首页所有分页class属性，并通过js闭包循环为页面a标签添加监听。
+**公开访问**
+- 留言墙：按时间倒序展示留言，每页 5 条
+- 展示头像、昵称、时间、来源 IP、留言内容
+- 未登录访客可以浏览，但不能发布
 
+**普通用户**
+- 注册（注册后自动登录）、登录、退出
+- 发布留言
+- 查看个人资料、修改昵称/邮箱/密码
+- 上传/更换头像
+- 查看并删除自己的留言
+
+**管理员**
+- 独立管理员登录（仅 `role = 2` 账号可用）
+- 新增管理员
+- 分页查看全部用户、编辑用户资料、删除用户（级联删除其留言）
+- 查看并删除任意用户的留言
+- 不能删除当前登录的管理员账号
+
+## 演示账号
+
+开发环境（H2）启动时会自动写入演示数据：
+
+| 角色 | 邮箱 | 密码 |
+|---|---|---|
+| 管理员 | `percyjie@gmail.com` | `123456` |
+| 普通用户 | `licyun@qq.com` | `12345678` |
+| 普通用户 | `licyun@gmail.com` | `12345678` |
+| 普通用户 | `licyun@163.com` | `12345678` |
+
+## 快速启动（H2，无需安装数据库）
+
+要求：JDK 17、Maven 3.9+（IntelliJ IDEA 自带的 Maven 也可以）。
+
+```bash
+mvn spring-boot:run
+```
+
+浏览器打开 <http://localhost:8080>。
+
+默认使用 dev 配置：H2 内存数据库，重启后数据重置，并自动初始化演示数据。
+
+H2 控制台：<http://localhost:8080/h2-console>
+- JDBC URL：`jdbc:h2:mem:messageboard`
+- 用户名：`sa`
+- 密码：留空
+
+## 使用 MySQL 8
+
+1. 建库建表：
+
+```bash
+mysql -u root -p < src/main/resources/db/schema-mysql.sql
+```
+
+2. 设置数据库连接（按需修改）：
+
+```bash
+# macOS / Linux / Git Bash
+export DB_USERNAME=root
+export DB_PASSWORD=your-password
+
+# Windows PowerShell
+$env:DB_USERNAME="root"
+$env:DB_PASSWORD="your-password"
+```
+
+可选环境变量：
+- `DB_URL`：覆盖默认 JDBC URL
+- `UPLOAD_DIR`：头像存储目录，默认 `./uploads`
+
+3. 使用 prod 配置启动：
+
+```bash
+mvn spring-boot:run -Dspring-boot.run.profiles=prod
+```
+
+或打包后运行：
+
+```bash
+mvn clean package
+java -jar target/message-board-1.0.0.jar --spring.profiles.active=prod
+```
+
+生产配置默认关闭演示数据。首次部署可以临时把 `src/main/resources/application-prod.yml` 中的 `app.demo-data.enabled` 改为 `true`，启动后生成管理员账号，再改回 `false` 并重启；也可以自行向 `t_user` 表插入 BCrypt 密码哈希。
+
+## 主要配置
+
+| 配置项 | 默认值 | 说明 |
+|---|---|---|
+| `app.page-size` | `5` | 每页条数 |
+| `app.upload-dir` | `./uploads` | 头像存储目录 |
+| `app.demo-data.enabled` | dev 为 `true`，prod 为 `false` | 是否初始化演示数据 |
+| `spring.servlet.multipart.max-file-size` | `2MB` | 头像大小上限 |
+| `server.servlet.session.timeout` | `30m` | 会话超时 |
+| `server.port` | `8080` | 端口 |
+
+## 目录结构
+
+```
+src/main/java/com/percy/messageboard/
+├── config/          # Web、MyBatis-Plus、属性、全局模型、异常处理
+├── controller/      # 首页、认证、个人中心、留言、管理后台
+├── dto/             # 表单、Session 用户、留言/用户列表投影
+├── entity/          # User、Message
+├── init/            # 演示数据初始化
+├── interceptor/     # 用户/管理员登录拦截
+├── mapper/          # MyBatis-Plus Mapper
+├── service/         # 业务逻辑
+└── util/            # IP、时间、重定向、Session key
+
+src/main/resources/
+├── db/              # H2 / MySQL 建表脚本
+├── mapper/          # 留言联表分页 SQL
+├── templates/       # Thymeleaf 页面与公共片段
+└── static/          # app.css、app.js、Bootstrap 5、favicon
+```
+
+## 与旧版的差异
+
+这是重写版本，不是旧数据迁移：
+
+- 使用新表 `t_user` / `t_message`，旧 `gbook.sql` 不再使用
+- 密码由明文改为 BCrypt，个人中心不再展示密码
+- 留言列表改为服务端分页，旧 AJAX 接口 `messageJson-{page}` 已移除
+- 旧淘宝 IP 归属地接口早已失效，改为保存并展示客户端 IP，不再发起外部请求
+- 昵称长度从“至少 6 位”放宽到 2–20 位，兼容 2–4 字中文名
+- 删除用户会级联删除其留言，不再因外键约束报错
+
+## 安全说明
+
+- 所有页面输出使用 `th:text`，自动转义，修复旧版存储型 XSS
+- 删除、修改全部使用 POST + PRG，并校验归属关系，修复旧版越权删除
+- 上传头像校验文件类型、扩展名与大小，使用 UUID 文件名，防止路径穿越
+- 登录成功后轮换 Session ID；退出时销毁会话
+- 管理员登录要求 `role = 2`，管理员不能删除自己
+
+已知限制：项目未引入 Spring Security，因此没有 CSRF Token；当前通过 POST-only 变更操作和 `SameSite=Lax` 会话 Cookie 降低风险。如需更严格的安全控制，可在后续引入 Spring Security。

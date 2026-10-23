@@ -1,0 +1,23 @@
+spring:
+  datasource:
+    url: "${DB_URL:jdbc:mysql://localhost:3306/message_board?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true}"
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: "${DB_USERNAME:root}"
+    password: "${DB_PASSWORD:}"
+  sql:
+    init:
+      mode: never
+  h2:
+    console:
+      enabled: false
+  thymeleaf:
+    cache: true
+
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.nologging.NoLoggingImpl
+
+app:
+  upload-dir: ${UPLOAD_DIR:./uploads}
+  demo-data:
+    enabled: false

@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<nav th:fragment="pagination(page, baseUrl)" class="pager" th:if="${page.pages > 1}" aria-label="分页">
+    <div class="pager-info">
+        第 <strong th:text="${page.current}">1</strong> / <span th:text="${page.pages}">1</span> 页 ·
+        共 <span th:text="${page.total}">0</span> 条
+    </div>
+    <ul class="pagination mb-0">
+        <li class="page-item" th:classappend="${page.current <= 1} ? 'disabled'">
+            <a class="page-link" th:href="@{${baseUrl}(page=${page.current - 1})}" aria-label="上一页">上一页</a>
+        </li>
+        <li class="page-item" th:each="i : ${#numbers.sequence(1, page.pages)}"
+            th:classappend="${i == page.current} ? 'active'">
+            <a class="page-link" th:href="@{${baseUrl}(page=${i})}" th:text="${i}">1</a>
+        </li>
+        <li class="page-item" th:classappend="${page.current >= page.pages} ? 'disabled'">
+            <a class="page-link" th:href="@{${baseUrl}(page=${page.current + 1})}" aria-label="下一页">下一页</a>
+        </li>
+    </ul>
+</nav>
+</body>
+</html>

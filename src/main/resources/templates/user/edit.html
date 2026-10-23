@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('修改资料')}"></head>
+<body>
+<div th:replace="~{fragments/navbar :: siteNav('profile')}"></div>
+
+<main class="container page">
+    <div class="page-head">
+        <div>
+            <h1>修改资料</h1>
+            <p>更新昵称、邮箱，或设置一个新密码。</p>
+        </div>
+        <a class="btn btn-light" th:href="@{/user/profile}">返回个人中心</a>
+    </div>
+
+    <div th:replace="~{fragments/alerts :: alerts}"></div>
+
+    <form class="form-card card" th:action="@{/user/profile/edit}" th:object="${profileForm}"
+          method="post" novalidate>
+        <div class="form-field">
+            <label class="form-label" for="name">昵称</label>
+            <input type="text" id="name" class="form-control" th:field="*{name}" autocomplete="nickname">
+            <p class="field-error" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></p>
+        </div>
+
+        <div class="form-field">
+            <label class="form-label" for="email">邮箱</label>
+            <input type="email" id="email" class="form-control" th:field="*{email}" autocomplete="username">
+            <p class="field-error" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></p>
+        </div>
+
+        <div class="form-field">
+            <label class="form-label" for="password">新密码</label>
+            <input type="password" id="password" class="form-control" th:field="*{password}"
+                   autocomplete="new-password">
+            <p class="form-hint">留空则保持当前密码不变；如需修改，请输入 6-20 位新密码。</p>
+            <p class="field-error" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></p>
+        </div>
+
+        <div class="actions">
+            <button class="btn btn-brand" type="submit">保存修改</button>
+            <a class="btn btn-light" th:href="@{/user/profile}">取消</a>
+        </div>
+    </form>
+</main>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>
