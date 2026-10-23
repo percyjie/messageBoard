@@ -27,7 +27,7 @@
 
     <section class="composer card" th:if="${currentUser != null}">
         <div class="composer-head">
-            <span th:replace="~{fragments/avatar :: avatar(currentUser.name, currentUser.avatar, 'md')}"></span>
+            <span th:replace="~{fragments/avatar :: avatar(${currentUser.name}, ${currentUser.avatar}, 'md')}"></span>
             <div>
                 以 <strong th:text="${currentUser.name}">昵称</strong> 的身份留言
             </div>
@@ -73,7 +73,7 @@
 
         <article class="message-card card" th:each="m : ${messages}">
             <header class="message-head">
-                <span th:replace="~{fragments/avatar :: avatar(m.authorName, m.avatar, 'md')}"></span>
+                <span th:replace="~{fragments/avatar :: avatar(${m.authorName}, ${m.avatar}, 'md')}"></span>
                 <div class="message-meta">
                     <div class="message-author">
                         <span th:text="${m.authorName}">昵称</span>

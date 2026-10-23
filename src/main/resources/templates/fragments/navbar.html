@@ -22,7 +22,7 @@
                    th:href="@{/user/messages}">我的留言</a>
                 <div class="dropdown">
                     <button class="user-chip" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        <span th:replace="~{fragments/avatar :: avatar(currentUser.name, currentUser.avatar, 'sm')}"></span>
+                        <span th:replace="~{fragments/avatar :: avatar(${currentUser.name}, ${currentUser.avatar}, 'sm')}"></span>
                         <span class="chip-name" th:text="${currentUser.name}">昵称</span>
                         <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor"
                              stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -71,7 +71,7 @@
                th:href="@{/admin/users/new}">新增管理员</a>
             <a class="nav-link" th:href="@{/}">返回前台</a>
             <span class="admin-chip" th:if="${currentAdmin != null}">
-                <span th:replace="~{fragments/avatar :: avatar(currentAdmin.name, currentAdmin.avatar, 'sm')}"></span>
+                <span th:replace="~{fragments/avatar :: avatar(${currentAdmin.name}, ${currentAdmin.avatar}, 'sm')}"></span>
                 <span class="chip-name" th:text="${currentAdmin.name}">管理员</span>
             </span>
             <form th:action="@{/admin/logout}" method="post">

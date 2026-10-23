@@ -17,7 +17,7 @@
 
     <section class="avatar-editor card">
         <div class="avatar-current">
-            <span th:replace="~{fragments/avatar :: avatar(user.name, user.avatar, 'xl')}"></span>
+            <span th:replace="~{fragments/avatar :: avatar(${user.name}, ${user.avatar}, 'xl')}"></span>
             <div class="muted" style="margin-top:12px;">当前头像</div>
         </div>
 

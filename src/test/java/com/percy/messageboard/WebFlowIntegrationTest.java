@@ -11,15 +11,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.mock.web.MockHttpSession;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
+import java.util.Base64;
 import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrlPattern;
@@ -107,6 +110,28 @@ class WebFlowIntegrationTest {
 
         assertThat(html).contains("&lt;script&gt;");
         assertThat(html).doesNotContain(payload);
+    }
+
+    @Test
+    void avatarUploadRendersStoredFileUrl() throws Exception {
+        MockHttpSession session = register(uniqueEmail(), "头像用户", "123456");
+        byte[] png = Base64.getDecoder().decode(
+                "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=");
+
+        mockMvc.perform(multipart("/user/avatar")
+                        .file(new MockMultipartFile("file", "avatar.png", "image/png", png))
+                        .session(session))
+                .andExpect(status().is3xxRedirection());
+
+        String html = mockMvc.perform(get("/user/profile").session(session))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        assertThat(html).containsPattern("/upload/[0-9a-f\\-]{36}\\.png");
+        assertThat(html).doesNotContain("/upload/user.avatar");
+        assertThat(html).doesNotContain("/upload/currentUser.avatar");
     }
 
     private MockHttpSession register(String email, String name, String password) throws Exception {
